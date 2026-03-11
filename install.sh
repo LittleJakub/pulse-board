@@ -278,6 +278,11 @@ fi
 # ── Add digest cron jobs ──────────────────────────────────────────────────────
 EXISTING_CRON="$(crontab -l 2>/dev/null || true)"
 
+# Detect openclaw path for crontab PATH line
+OPENCLAW_BIN="$(command -v openclaw 2>/dev/null || true)"
+OPENCLAW_BIN_DIR=""
+[[ -n "$OPENCLAW_BIN" ]] && OPENCLAW_BIN_DIR="$(dirname "$OPENCLAW_BIN")"
+
 if echo "$EXISTING_CRON" | grep -q "pulse-board-morning"; then
   yellow "  · Digest cron jobs already present — skipping"
 else
@@ -286,13 +291,20 @@ else
   dim "  Will add two entries to your user crontab:"
   dim "    ${MORNING_M} ${MORNING_H} * * *  digest-agent.sh  # pulse-board-morning"
   dim "    ${EVENING_M} ${EVENING_H} * * *  digest-agent.sh  # pulse-board-evening"
+  [[ -n "$OPENCLAW_BIN_DIR" ]] &&     dim "  Will also set PATH in crontab to include: $OPENCLAW_BIN_DIR"
   echo ""
   if confirm "Add these cron entries?"; then
     python3 - <<PYEOF
-import subprocess
+import subprocess, os
 
 result = subprocess.run(['crontab', '-l'], capture_output=True, text=True)
 existing = result.stdout.rstrip('\n')
+
+# Prepend PATH line if openclaw binary dir was found and PATH not already set
+openclaw_bin_dir = "${OPENCLAW_BIN_DIR}"
+if openclaw_bin_dir and 'PATH=' not in existing:
+    path_line = f"PATH={openclaw_bin_dir}:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+    existing = path_line + '\n' + existing
 
 morning = "${MORNING_M} ${MORNING_H} * * * bash ${SKILL_DIR}/digest-agent.sh >> ${PULSE_HOME}/logs/digest-agent.log 2>&1 # pulse-board-morning"
 evening = "${EVENING_M} ${EVENING_H} * * * bash ${SKILL_DIR}/digest-agent.sh >> ${PULSE_HOME}/logs/digest-agent.log 2>&1 # pulse-board-evening"
@@ -301,6 +313,7 @@ new_crontab = existing + '\n' + morning + '\n' + evening + '\n'
 subprocess.run(['crontab', '-'], input=new_crontab, text=True)
 PYEOF
     green "  ✓ Digest cron jobs added (${MORNING_H}:${MORNING_M} and ${EVENING_H}:${EVENING_M})"
+    [[ -n "$OPENCLAW_BIN_DIR" ]] && green "  ✓ PATH set in crontab ($OPENCLAW_BIN_DIR)"
   else
     yellow "  · Cron jobs skipped — add manually when ready"
   fi

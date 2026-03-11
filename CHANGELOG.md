@@ -1,5 +1,22 @@
 # Changelog
 
+## [1.1.4] - 2026-03-11
+
+### Fixed
+- `install.sh` now detects the `openclaw` binary location at install time and
+  automatically prepends its directory to the crontab `PATH` line. Previously,
+  users with npm-global installs (e.g. `~/.npm-global/bin`) would silently get
+  mechanical-only digests because `openclaw` was not found in cron's restricted
+  PATH. The installer announces the PATH change and includes it in the confirmed
+  crontab write — nothing silent.
+
+### Notes
+- If you already have Pulse Board installed and hit this issue, add this line
+  to the top of your crontab manually (`crontab -e`):
+  `PATH=/home/<you>/.npm-global/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin`
+
+---
+
 ## [1.1.3] - 2026-03-09
 
 ### Changed
