@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.1.5] - 2026-03-11
+
+### Fixed
+- `digest-agent.sh` now joins all agent response payloads instead of reading
+  only `payloads[0]`. When the agent returns multiple payloads (e.g. during
+  multi-step reasoning), the previous code failed to parse and silently fell
+  back to mechanical format. All payload texts are now concatenated and used
+  as the LLM summary.
+
+---
+
 ## [1.1.4] - 2026-03-11
 
 ### Fixed

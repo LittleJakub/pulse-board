@@ -1,6 +1,0 @@
-*.log
-*.lock
-*.env
-*.yaml
-*.yml
-secrets*

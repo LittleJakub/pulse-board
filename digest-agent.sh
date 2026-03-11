@@ -92,7 +92,7 @@ $(cat "$PENDING_LOG")"
 
   if $CALL_OK && [[ -n "$AGENT_RESPONSE" ]]; then
     LLM_TEXT="$(echo "$AGENT_RESPONSE" | python3 -c \
-      'import json,sys; d=json.load(sys.stdin); print(d["result"]["payloads"][0]["text"])' \
+      'import json,sys; d=json.load(sys.stdin); print(" ".join(p["text"] for p in d["result"]["payloads"] if p.get("text")))' \
       2>/dev/null)" && PARSE_OK=true || PARSE_OK=false
 
     if $PARSE_OK && [[ -n "$LLM_TEXT" ]]; then
