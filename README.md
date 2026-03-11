@@ -61,7 +61,7 @@ No sudo. No root. No system-level writes outside `~/.pulse-board/`.
 
 ```bash
 # Download the latest release and extract into your OpenClaw skills directory
-tar -xzf pulse-board-1.1.3.tar.gz --strip-components=1 \
+tar -xzf pulse-board-1.1.5.tar.gz --strip-components=1 \
   -C ~/.openclaw/skills/pulse-board/
 
 chmod +x ~/.openclaw/skills/pulse-board/*.sh
@@ -96,6 +96,17 @@ That's all. Pulse Board wraps the command, wires the cron entry, and starts coll
 Run `plug.sh` with no arguments for an interactive discovery mode — it'll scan your existing crontab and OpenClaw jobs and let you pick which ones to wire up.
 
 ---
+
+
+> ⚠️ **Heads up for Total Recall users:** `dream-cycle.sh` is not a standalone runner — it's a file operations helper called *by* the agent during a dream cycle turn. If you plug the dream cycle as a direct bash call, it will silently print usage and exit 0 (looks fine, does nothing).
+>
+> The correct way to wire it is as an agent turn:
+> ```bash
+> bash ~/.openclaw/skills/pulse-board/plug.sh \
+>   --skill total-recall-dream \
+>   --cron "0 3 * * *" \
+>   --cmd "openclaw agent --agent main --message \"Run the Total Recall Dream Cycle. Follow the instructions in ~/.openclaw/workspace/skills/total-recall/prompts/dream-cycle-prompt.md exactly. Use READ_ONLY_MODE=false and DREAM_PHASE=1.\" --json"
+> ```
 
 ## Remove a skill
 
