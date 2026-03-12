@@ -73,7 +73,9 @@ LLM_SUCCESS=false
 
 if command -v openclaw &>/dev/null; then
   b "digest-agent: requesting summary from '${LLM_AGENT}'..."
-  PROMPT="You are writing a brief operational digest for a sysadmin.
+  PROMPT_FILE="$(mktemp /tmp/pulse-prompt-XXXXXX)"
+  cat > "$PROMPT_FILE" <<PROMPT_EOF
+You are writing a brief operational digest for a sysadmin.
 Below are cron job outcomes from the last 12 hours. Write:
 1. One opening sentence on overall system health (casual, factual)
 2. One bullet per skill: what ran, how many times, outcome
@@ -84,11 +86,13 @@ No title line. No sign-off. No padding. Do not invent information.
 Do not include the status counts line.
 
 Raw log:
-$(cat "$PENDING_LOG")"
+$(cat "$PENDING_LOG")
+PROMPT_EOF
 
   AGENT_RESPONSE="$(timeout "$LLM_TIMEOUT" openclaw agent \
-    --agent "$LLM_AGENT" --message "$PROMPT" --json 2>/dev/null)" \
+    --agent "$LLM_AGENT" --message "$(cat "$PROMPT_FILE")" --json 2>/dev/null)" \
     && CALL_OK=true || CALL_OK=false
+  rm -f "$PROMPT_FILE"
 
   if $CALL_OK && [[ -n "$AGENT_RESPONSE" ]]; then
     LLM_TEXT="$(echo "$AGENT_RESPONSE" | python3 -c \

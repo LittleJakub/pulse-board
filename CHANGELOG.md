@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.1.6] - 2026-03-13
+
+### Fixed
+- `digest-agent.sh` prompt is now written to a temp file before being passed
+  to `openclaw agent`. Previously the prompt was built as a shell variable
+  containing the raw log — special characters (em dashes, newlines, Unicode)
+  caused silent parse failures in cron's restricted shell environment, falling
+  back to mechanical format every time.
+
+---
+
 ## [1.1.5] - 2026-03-11
 
 ### Fixed
