@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.1.7] - 2026-03-14
+
+### Fixed
+- `digest-agent.sh` now exports secrets to subprocesses via `set -a` before
+  sourcing the secrets env file. Previously, variables like `DEEPSEEK_API_KEY`
+  and `GATEWAY_TOKEN` were sourced into the current shell but not exported,
+  so OpenClaw's subprocess couldn't see them. In cron's clean environment this
+  caused `HTTP 401` on DeepSeek, fallback to OpenRouter free tier, and
+  ultimately `parse failed` on the garbage HTML response.
+
+---
+
 ## [1.1.6] - 2026-03-13
 
 ### Fixed

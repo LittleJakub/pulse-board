@@ -1,7 +1,7 @@
 {
   "slug": "pulse-board",
   "name": "Pulse Board",
-  "version": "1.1.6",
+  "version": "1.1.7",
   "description": "Operational heartbeat for your agent stack. Every cron job, one digest.",
   "tagline": "Every cron job. One digest.",
   "emoji": "\ud83d\udccb",

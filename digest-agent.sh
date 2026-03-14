@@ -14,7 +14,7 @@ PULSE_HOME="${PULSE_HOME:-$HOME/.pulse-board}"
 CONFIG_FILE="$PULSE_HOME/config/pulse.yaml"
 
 [[ -f "$HOME/.openclaw/shared/secrets/openclaw-secrets.env" ]] && \
-  { set +u; source "$HOME/.openclaw/shared/secrets/openclaw-secrets.env"; set -u; }
+  { set +u; set -a; source "$HOME/.openclaw/shared/secrets/openclaw-secrets.env"; set +a; set -u; }
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
 g() { printf "\033[0;32m%s\033[0m\n" "$*"; }
