@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.1.8] - 2026-03-15
+
+### Added
+- Feishu delivery channel. Add `channel: feishu` to `pulse.yaml` with
+  `app_id`, `app_secret`, `chat_id`, and optional `thread_id`. The skill
+  fetches a tenant access token on each delivery and sends via the Feishu
+  IM v1 messages API. Thread delivery is supported for group topics.
+- `install.sh` now includes Feishu as a channel option during interactive
+  setup, with guided prompts for App ID, App Secret, Chat ID, and Thread ID.
+
+---
+
 ## [1.1.7] - 2026-03-14
 
 ### Fixed

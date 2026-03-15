@@ -62,6 +62,32 @@ case "$CHANNEL" in
       -d "{\"content\":$TEXT}" --max-time 15 > /dev/null \
       && g "✓ Delivered to Discord" || { r "Discord delivery failed."; exit 1; }
     ;;
+  feishu)
+    APP_ID="$(cfg_under 'feishu' 'app_id')"
+    APP_SECRET="$(cfg_under 'feishu' 'app_secret')"
+    CHAT_ID="$(cfg_under 'feishu' 'chat_id')"
+    THREAD_ID="$(cfg_under 'feishu' 'thread_id')"
+    [[ -z "$APP_ID" ]]     && { r "Feishu: app_id not set.";     exit 1; }
+    [[ -z "$APP_SECRET" ]] && { r "Feishu: app_secret not set."; exit 1; }
+    [[ -z "$CHAT_ID" ]]    && { r "Feishu: chat_id not set.";    exit 1; }
+    # Get tenant access token
+    TOKEN_RESPONSE="$(curl -sf -X POST "https://open.feishu.cn/open-apis/auth/v3/tenant_access_token/internal" \
+      -H "Content-Type: application/json" \
+      -d "{\"app_id\":\"$APP_ID\",\"app_secret\":\"$APP_SECRET\"}" --max-time 15)"
+    TENANT_TOKEN="$(echo "$TOKEN_RESPONSE" | python3 -c 'import json,sys; d=json.load(sys.stdin); print(d.get("tenant_access_token",""))' 2>/dev/null)"
+    [[ -z "$TENANT_TOKEN" ]] && { r "Feishu: failed to get tenant access token."; exit 1; }
+    # Build message payload
+    FEISHU_PAYLOAD="{\"receive_id\":\"$CHAT_ID\",\"msg_type\":\"text\",\"content\":{\"text\":$(json_str "$MESSAGE")}}"
+    FEISHU_URL="https://open.feishu.cn/open-apis/im/v1/messages?receive_id_type=chat_id"
+    # Add thread if set
+    [[ -n "$THREAD_ID" ]] && FEISHU_URL="https://open.feishu.cn/open-apis/im/v1/messages?receive_id_type=thread_id" && \
+      FEISHU_PAYLOAD="{\"receive_id\":\"$THREAD_ID\",\"msg_type\":\"text\",\"content\":{\"text\":$(json_str "$MESSAGE")}}"
+    curl -sf -X POST "$FEISHU_URL" \
+      -H "Authorization: Bearer $TENANT_TOKEN" \
+      -H "Content-Type: application/json" \
+      -d "$FEISHU_PAYLOAD" --max-time 15 > /dev/null \
+      && g "✓ Delivered to Feishu" || { r "Feishu delivery failed."; exit 1; }
+    ;;
   log|none)
     g "✓ Digest written to last-delivered.md"
     ;;
