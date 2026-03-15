@@ -3,6 +3,7 @@
 # Sends a composed digest to the configured channel.
 # Called by digest-agent.sh — not meant for direct use.
 # Writes delivered message to last-delivered.md. Never touches last-digest.md.
+# Supported channels: telegram, discord, feishu, log
 # No sudo. No root.
 
 set -euo pipefail
@@ -11,7 +12,7 @@ PULSE_HOME="${PULSE_HOME:-$HOME/.pulse-board}"
 CONFIG_FILE="$PULSE_HOME/config/pulse.yaml"
 
 [[ -f "$HOME/.openclaw/shared/secrets/openclaw-secrets.env" ]] && \
-  { set +u; source "$HOME/.openclaw/shared/secrets/openclaw-secrets.env"; set -u; }
+  { set +u; set -a; source "$HOME/.openclaw/shared/secrets/openclaw-secrets.env"; set +a; set -u; }
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
 g() { printf "\033[0;32m%s\033[0m\n" "$*" >&2; }
@@ -76,12 +77,18 @@ case "$CHANNEL" in
       -d "{\"app_id\":\"$APP_ID\",\"app_secret\":\"$APP_SECRET\"}" --max-time 15)"
     TENANT_TOKEN="$(echo "$TOKEN_RESPONSE" | python3 -c 'import json,sys; d=json.load(sys.stdin); print(d.get("tenant_access_token",""))' 2>/dev/null)"
     [[ -z "$TENANT_TOKEN" ]] && { r "Feishu: failed to get tenant access token."; exit 1; }
-    # Build message payload
-    FEISHU_PAYLOAD="{\"receive_id\":\"$CHAT_ID\",\"msg_type\":\"text\",\"content\":{\"text\":$(json_str "$MESSAGE")}}"
-    FEISHU_URL="https://open.feishu.cn/open-apis/im/v1/messages?receive_id_type=chat_id"
-    # Add thread if set
-    [[ -n "$THREAD_ID" ]] && FEISHU_URL="https://open.feishu.cn/open-apis/im/v1/messages?receive_id_type=thread_id" && \
-      FEISHU_PAYLOAD="{\"receive_id\":\"$THREAD_ID\",\"msg_type\":\"text\",\"content\":{\"text\":$(json_str "$MESSAGE")}}"
+    # Feishu content must be a JSON-encoded string: {"text":"..."}
+    FEISHU_CONTENT="$(python3 -c 'import json,sys; print(json.dumps(json.dumps({"text":sys.stdin.read()})))' <<< "$MESSAGE")"
+    if [[ -n "$THREAD_ID" ]]; then
+      # Reply to thread root message (om_xxx) — posts into the thread
+      # thread_id here is the message_id (om_xxx) of the thread's root message
+      FEISHU_PAYLOAD="{\"msg_type\":\"text\",\"content\":$FEISHU_CONTENT,\"uuid\":\"$(date +%s%N)\"}"
+      FEISHU_URL="https://open.feishu.cn/open-apis/im/v1/messages/$THREAD_ID/reply"
+    else
+      # Send to group chat directly
+      FEISHU_PAYLOAD="{\"receive_id\":\"$CHAT_ID\",\"msg_type\":\"text\",\"content\":$FEISHU_CONTENT,\"uuid\":\"$(date +%s%N)\"}"
+      FEISHU_URL="https://open.feishu.cn/open-apis/im/v1/messages?receive_id_type=chat_id"
+    fi
     curl -sf -X POST "$FEISHU_URL" \
       -H "Authorization: Bearer $TENANT_TOKEN" \
       -H "Content-Type: application/json" \

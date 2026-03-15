@@ -1,5 +1,29 @@
 # Changelog
 
+## [1.1.9] - 2026-03-15
+
+### Added
+- Feishu delivery channel (`channel: feishu` in `pulse.yaml`). Supports both
+  group chat delivery and thread delivery. For threads, set `thread_id` to the
+  root message ID (`om_xxx`) of the target thread — the installer now explains
+  this clearly. Feishu fetches a tenant access token on each delivery and uses
+  the IM v1 reply API for thread delivery.
+- `install.sh` now includes Feishu as a channel option with guided setup.
+
+### Fixed
+- Feishu `content` field now correctly sent as a JSON-encoded string, not a
+  JSON object. Feishu API requires `content` to be `{"text":"..."}` as a
+  string, not an object.
+- `digest-agent.sh` JSON parse now strips stdout prefix lines (OpenClaw plugin
+  registration messages) before parsing the JSON response. Fixes `parse failed`
+  when Feishu plugin is active.
+- Default digest times changed from 06:00/18:00 to 05:00/17:00 to avoid
+  clashing with other scheduled skills at those hours.
+- `deliver.sh` now exports secrets with `set -a` before sourcing, matching the
+  fix already in `digest-agent.sh`.
+
+---
+
 ## [1.1.8] - 2026-03-15
 
 ### Added

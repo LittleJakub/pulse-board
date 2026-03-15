@@ -142,8 +142,9 @@ case "$CHANNEL" in
     ask "Chat ID" ""
     FEISHU_CHAT_ID="$REPLY"
     echo ""
-    dim "  Only needed for Feishu group threads. Leave blank if unsure."
-    ask "Thread ID (leave blank if unsure)" ""
+    dim "  Optional: the message_id (om_xxx) of the root message in your target thread."
+    dim "  To find it: fetch messages from the thread via Feishu API, or leave blank to send to the group root."
+    ask "Thread root message ID om_xxx (leave blank if unsure)" ""
     FEISHU_THREAD_ID="$REPLY"
     ;;
   "log file only")
@@ -158,12 +159,12 @@ echo ""
 dim "  Pulse Board posts a digest twice daily."
 echo ""
 
-ask "Morning digest hour (0-23)" "6"
+ask "Morning digest hour (0-23)" "5"
 MORNING_H="$REPLY"
 ask "Morning digest minute (0-59)" "0"
 MORNING_M="$REPLY"
 
-ask "Evening digest hour (0-23)" "18"
+ask "Evening digest hour (0-23)" "17"
 EVENING_H="$REPLY"
 ask "Evening digest minute (0-59)" "0"
 EVENING_M="$REPLY"

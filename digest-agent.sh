@@ -96,7 +96,7 @@ PROMPT_EOF
 
   if $CALL_OK && [[ -n "$AGENT_RESPONSE" ]]; then
     LLM_TEXT="$(echo "$AGENT_RESPONSE" | python3 -c \
-      'import json,sys; d=json.load(sys.stdin); print(" ".join(p["text"] for p in d["result"]["payloads"] if p.get("text")))' \
+      'import json,sys; raw=sys.stdin.read(); start=raw.find("{"); d=json.loads(raw[start:]) if start>=0 else {}; print(" ".join(p["text"] for p in d.get("result",{}).get("payloads",[]) if p.get("text")))' \
       2>/dev/null)" && PARSE_OK=true || PARSE_OK=false
 
     if $PARSE_OK && [[ -n "$LLM_TEXT" ]]; then

@@ -51,7 +51,7 @@ If something breaks, the relevant log lines show up in the digest so you know ex
 
 - bash 4+, curl, python3 — standard on any modern Linux or macOS
 - [OpenClaw](https://openclaw.ai) with at least one configured agent
-- A Telegram bot token + chat ID, a Discord webhook, or just log-to-file if you want to keep it simple
+- A Telegram bot token + chat ID, a Discord webhook, a Feishu app (app_id + app_secret + chat_id), or just log-to-file
 
 No sudo. No root. No system-level writes outside `~/.pulse-board/`.
 
@@ -61,7 +61,7 @@ No sudo. No root. No system-level writes outside `~/.pulse-board/`.
 
 ```bash
 # Download the latest release and extract into your OpenClaw skills directory
-tar -xzf pulse-board-1.1.5.tar.gz --strip-components=1 \
+tar -xzf pulse-board-1.1.3.tar.gz --strip-components=1 \
   -C ~/.openclaw/skills/pulse-board/
 
 chmod +x ~/.openclaw/skills/pulse-board/*.sh
@@ -97,16 +97,7 @@ Run `plug.sh` with no arguments for an interactive discovery mode — it'll scan
 
 ---
 
-
-> ⚠️ **Heads up for Total Recall users:** `dream-cycle.sh` is not a standalone runner — it's a file operations helper called *by* the agent during a dream cycle turn. If you plug the dream cycle as a direct bash call, it will silently print usage and exit 0 (looks fine, does nothing).
->
-> The correct way to wire it is as an agent turn:
-> ```bash
-> bash ~/.openclaw/skills/pulse-board/plug.sh \
->   --skill total-recall-dream \
->   --cron "0 3 * * *" \
->   --cmd "openclaw agent --agent main --message \"Run the Total Recall Dream Cycle. Follow the instructions in ~/.openclaw/workspace/skills/total-recall/prompts/dream-cycle-prompt.md exactly. Use READ_ONLY_MODE=false and DREAM_PHASE=1.\" --json"
-> ```
+> ⚠️ **Feishu thread note:** When configuring Feishu with a thread, `thread_id` must be the **root message ID** (`om_xxx`) of the thread — not the thread ID (`omt_xxx`). To find it, fetch the first message in your thread via the Feishu API. The installer will prompt you for this.
 
 ## Remove a skill
 
