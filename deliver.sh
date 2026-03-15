@@ -77,8 +77,10 @@ case "$CHANNEL" in
       -d "{\"app_id\":\"$APP_ID\",\"app_secret\":\"$APP_SECRET\"}" --max-time 15)"
     TENANT_TOKEN="$(echo "$TOKEN_RESPONSE" | python3 -c 'import json,sys; d=json.load(sys.stdin); print(d.get("tenant_access_token",""))' 2>/dev/null)"
     [[ -z "$TENANT_TOKEN" ]] && { r "Feishu: failed to get tenant access token."; exit 1; }
+    # Strip Markdown bold/italic — Feishu renders plain text only
+    FEISHU_MESSAGE="$(echo "$MESSAGE" | python3 -c 'import sys,re; print(re.sub(r"\*+([^*]+)\*+", r"\1", sys.stdin.read()).strip())')" 
     # Feishu content must be a JSON-encoded string: {"text":"..."}
-    FEISHU_CONTENT="$(python3 -c 'import json,sys; print(json.dumps(json.dumps({"text":sys.stdin.read()})))' <<< "$MESSAGE")"
+    FEISHU_CONTENT="$(python3 -c 'import json,sys; print(json.dumps(json.dumps({"text":sys.stdin.read()})))' <<< "$FEISHU_MESSAGE")"
     if [[ -n "$THREAD_ID" ]]; then
       # Reply to thread root message (om_xxx) — posts into the thread
       # thread_id here is the message_id (om_xxx) of the thread's root message
