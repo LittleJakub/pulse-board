@@ -4,7 +4,7 @@
 
 You've got a bunch of skills running on a schedule — backing things up, watching VPNs, consolidating memory, doing whatever weird automation you've cooked up. And you have absolutely no idea if any of them actually ran today. Did the backup finish? Did the observer fire? Who knows! It's fine. Probably fine.
 
-Pulse Board fixes that. Every scheduled skill logs a one-liner when it runs. Twice a day, an LLM reads those lines and writes you a friendly human summary. You get a Telegram (or Discord) message that tells you what happened, what didn't, and what exploded — without you having to SSH in and grep through logs like an animal.
+Pulse Board fixes that. Every scheduled skill logs a one-liner when it runs. Twice a day, an LLM reads those lines and writes you a friendly human summary. You get a message that tells you what happened, what didn't, and what exploded — without having to SSH in and grep through logs like an animal.
 
 ---
 
@@ -18,7 +18,7 @@ your skill runs
       saves full raw log to last-digest.md
       asks your OpenClaw agent to write a human summary
         (falls back to mechanical format if the agent is unavailable)
-      delivers to Telegram / Discord / log file
+      delivers to Telegram / Discord / Feishu / log file
       clears pending.log
       prunes old detail logs
 ```
@@ -27,20 +27,21 @@ That's it. No daemon. No database. No magic. Just cron, bash, and a sprinkle of 
 
 ---
 
-## What you get in Telegram
+## What you get
 
 ```
-📋 Pulse Board Digest — 2026-03-09 18:00 CST
-✅ 4 ok · 0 skipped · 0 warnings · 0 errors
+📋 Pulse Board Digest — 2026-03-15 05:00 CST
+✅ 12 ok · 0 skipped · 0 warnings · 0 errors
 
-All systems ran cleanly this afternoon. Total Recall observed 3 sessions,
-the reflector had nothing to consolidate, and healthy-backup completed at
-05:00 without complaint.
+All systems ran cleanly overnight. Total Recall observed 4 sessions,
+the reflector consolidated once, and healthy-backup completed at 05:00
+without complaint. Dream cycle ran at 03:00 and processed 7 observations.
 
-• total-recall — ran 8x, all OK
-• total-recall-reflector — ran 1x, OK
+• total-recall — ran 12x, all OK
+• total-recall-reflector — ran 4x, all OK
 • total-recall-dream — ran 1x, OK
 • healthy-backup — ran 1x, OK
+• daily-brief — ran 1x, OK
 ```
 
 If something breaks, the relevant log lines show up in the digest so you know exactly what went wrong without hunting for it.
@@ -51,7 +52,7 @@ If something breaks, the relevant log lines show up in the digest so you know ex
 
 - bash 4+, curl, python3 — standard on any modern Linux or macOS
 - [OpenClaw](https://openclaw.ai) with at least one configured agent
-- A Telegram bot token + chat ID, a Discord webhook, a Feishu app (app_id + app_secret + chat_id), or just log-to-file
+- One of: Telegram bot, Discord webhook, Feishu app, or log-to-file
 
 No sudo. No root. No system-level writes outside `~/.pulse-board/`.
 
@@ -61,28 +62,80 @@ No sudo. No root. No system-level writes outside `~/.pulse-board/`.
 
 ```bash
 # Download the latest release and extract into your OpenClaw skills directory
-tar -xzf pulse-board-1.1.3.tar.gz --strip-components=1 \
+tar -xzf pulse-board-1.1.9.tar.gz --strip-components=1 \
   -C ~/.openclaw/skills/pulse-board/
 
 chmod +x ~/.openclaw/skills/pulse-board/*.sh
 bash ~/.openclaw/skills/pulse-board/install.sh
 ```
 
-The installer is interactive and walks you through everything:
+The installer walks you through everything:
 - Timezone
-- Delivery channel (Telegram / Discord / log file)
-- Digest schedule (morning + evening hours)
+- Delivery channel (Telegram / Discord / Feishu / log file)
+- Digest schedule (morning + evening hours, default 05:00 / 17:00)
 - OpenClaw workspace path
 - Which agent to use for digest composition
 - Whether to patch your secrets env file (explicit opt-in, nothing silent)
 
-It will show you exactly what it's about to write to your crontab and ask for confirmation before touching anything.
+It will show you exactly what it's about to write to your crontab before touching anything.
+
+---
+
+## Delivery channels
+
+### Telegram
+Standard bot API. Supports forum group threads via `message_thread_id`.
+
+```yaml
+delivery:
+  channel: telegram
+  telegram:
+    enabled:   true
+    bot_token: "your-bot-token"
+    chat_id:   "-100xxxxxxxxxx"
+    thread_id: "6"   # optional — forum topic ID
+```
+
+### Discord
+Webhook delivery.
+
+```yaml
+delivery:
+  channel: discord
+  discord:
+    enabled:     true
+    webhook_url: "https://discord.com/api/webhooks/..."
+```
+
+### Feishu
+App-based delivery using tenant access token. Supports group chat and thread delivery.
+
+```yaml
+delivery:
+  channel: feishu
+  feishu:
+    enabled:    true
+    app_id:     "cli_xxxxxxxxxx"
+    app_secret: "your-app-secret"
+    chat_id:    "oc_xxxxxxxxxx"    # group chat ID
+    thread_id:  "om_xxxxxxxxxx"    # optional — root message ID of target thread
+```
+
+> ⚠️ **Feishu thread note:** `thread_id` must be the **root message ID** (`om_xxx`) of the thread — not the thread ID (`omt_xxx`). To find it, fetch messages from the thread via the Feishu API (`GET /im/v1/messages?container_id_type=thread&container_id=omt_xxx`) and grab the first `message_id`.
+
+### Log file only
+No external delivery — digest is written to `~/.pulse-board/logs/last-delivered.md` only.
+
+```yaml
+delivery:
+  channel: log
+```
 
 ---
 
 ## Plug in a skill
 
-Once Pulse Board is installed, you wire up your skills one by one:
+Once Pulse Board is installed, wire up your skills one by one:
 
 ```bash
 bash ~/.openclaw/skills/pulse-board/plug.sh \
@@ -93,11 +146,17 @@ bash ~/.openclaw/skills/pulse-board/plug.sh \
 
 That's all. Pulse Board wraps the command, wires the cron entry, and starts collecting outcomes automatically.
 
-Run `plug.sh` with no arguments for an interactive discovery mode — it'll scan your existing crontab and OpenClaw jobs and let you pick which ones to wire up.
+Run `plug.sh` with no arguments for an interactive discovery mode.
+
+> ⚠️ **Total Recall dream cycle note:** `dream-cycle.sh` is a file operations helper called *by* the agent — not a standalone runner. Wire the dream cycle as a full agent turn instead:
+> ```bash
+> bash ~/.openclaw/skills/pulse-board/plug.sh \
+>   --skill total-recall-dream \
+>   --cron "0 3 * * *" \
+>   --cmd "openclaw agent --agent main --timeout 1800 --message \"Run the Total Recall Dream Cycle. Follow the instructions in ~/.openclaw/workspace/skills/total-recall/prompts/dream-cycle-prompt.md exactly. Use READ_ONLY_MODE=false and DREAM_PHASE=1.\" --json"
+> ```
 
 ---
-
-> ⚠️ **Feishu thread note:** When configuring Feishu with a thread, `thread_id` must be the **root message ID** (`om_xxx`) of the thread — not the thread ID (`omt_xxx`). To find it, fetch the first message in your thread via the Feishu API. The installer will prompt you for this.
 
 ## Remove a skill
 
@@ -141,8 +200,7 @@ When LLM digest composition is enabled, the full `pending.log` is included in th
 
 If that's a concern:
 - Point the digest agent at a local-only model (e.g. Ollama) in `pulse.yaml` → `digest.llm_agent`
-- Or set `digest.llm_agent` to an agent backed by a local model
-- Or just don't enable LLM composition — the mechanical fallback is perfectly readable
+- Or just disable LLM composition — the mechanical fallback is perfectly readable
 
 Also worth knowing: Pulse Board cannot prevent plugged cron jobs from writing secrets into their stdout/stderr. Make sure your jobs don't echo credentials into their outputs.
 
@@ -157,7 +215,7 @@ Also worth knowing: Pulse Board cannot prevent plugged cron jobs from writing se
 | `unplug.sh` | Remove a skill and its cron entry |
 | `log-append.sh` | Called by skill cron wrappers to record outcomes |
 | `digest-agent.sh` | Runs on schedule — composes and delivers the digest |
-| `deliver.sh` | Internal delivery handler (Telegram / Discord / log) |
+| `deliver.sh` | Internal delivery handler (Telegram / Discord / Feishu / log) |
 
 ---
 
