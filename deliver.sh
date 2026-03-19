@@ -11,8 +11,9 @@ set -euo pipefail
 PULSE_HOME="${PULSE_HOME:-$HOME/.pulse-board}"
 CONFIG_FILE="$PULSE_HOME/config/pulse.yaml"
 
-[[ -f "$HOME/.openclaw/shared/secrets/openclaw-secrets.env" ]] && \
-  { set +u; set -a; source "$HOME/.openclaw/shared/secrets/openclaw-secrets.env"; set +a; set -u; }
+OC_ENV="${OPENCLAW_STATE_DIR:-$HOME/.openclaw}/.env"
+[[ -f "$OC_ENV" ]] && \
+  { set +u; set -a; source "$OC_ENV"; set +a; set -u; }
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
 g() { printf "\033[0;32m%s\033[0m\n" "$*" >&2; }

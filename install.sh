@@ -176,7 +176,7 @@ echo ""
 dim "  Directory where OpenClaw stores its registered cron jobs."
 echo ""
 
-ask "OpenClaw cron directory" "$HOME/.openclaw/cron"
+ask "OpenClaw cron directory" "${OPENCLAW_STATE_DIR:-$HOME/.openclaw}/cron"
 OPENCLAW_CRON_DIR="$REPLY"
 
 # ── Step 5: Secrets env file ──────────────────────────────────────────────────
@@ -187,7 +187,7 @@ dim "  Path to your secrets env file. Will be sourced before each skill runs."
 dim "  Leave blank to skip."
 echo ""
 
-ask "Secrets env file" "$HOME/.openclaw/shared/secrets/openclaw-secrets.env"
+ask "Secrets env file" "${OPENCLAW_STATE_DIR:-$HOME/.openclaw}/.env"
 SECRETS_ENV="$REPLY"
 
 # ── Step 6: OpenClaw workspace ────────────────────────────────────────────────
@@ -198,7 +198,7 @@ dim "  Absolute path to your OpenClaw agent workspace."
 dim "  Used by skills like Total Recall to locate memory and log directories."
 echo ""
 
-ask "OpenClaw workspace" "$HOME/.openclaw/workspace"
+ask "OpenClaw workspace" "${OPENCLAW_STATE_DIR:-$HOME/.openclaw}/workspace"
 OPENCLAW_WORKSPACE="$REPLY"
 
 # ── Step 7: Digest agent ──────────────────────────────────────────────────────
