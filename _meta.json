@@ -49,12 +49,12 @@
       "~/.pulse-board/logs/last-digest.md (raw pending.log snapshot, preserved separately)"
     ],
     "reads": [
-      "~/.openclaw/shared/secrets/openclaw-secrets.env (if present and provided by user)",
+      "~/.openclaw/.env (if present and provided by user)",
       "~/.openclaw/cron/jobs.json (if present)"
     ],
     "modifies": [
       "user crontab (adds digest schedule and wrapped skill entries)",
-      "~/.openclaw/shared/secrets/openclaw-secrets.env (appends missing keys only, with explicit user consent)"
+      "~/.openclaw/.env (appends missing keys only, with explicit user consent)"
     ]
   },
   "network": {
