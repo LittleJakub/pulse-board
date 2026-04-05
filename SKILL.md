@@ -3,7 +3,7 @@ name: pulse-board
 description: "Universal operational digest for agent skill stacks. Every scheduled skill logs its outcome with log-append.sh. Twice daily, digest-agent.sh reads the log, composes a human-readable summary via your configured OpenClaw agent, delivers it to Telegram/Discord/log, and clears. Falls back to mechanical format if the agent call fails. install.sh handles everything interactively in one run. plug.sh wires any skill's cron job in one command."
 ---
 
-# Pulse Board 📋
+# pulse bOard 📋
 
 **Operational heartbeat for your agent stack. Every cron job, one digest.**
 
@@ -101,7 +101,7 @@ bash ~/.openclaw/skills/pulse-board/unplug.sh --skill my-skill
 
 ```bash
 bash ~/.openclaw/skills/pulse-board/log-append.sh \
-  --skill test --status OK --message "Hello Pulse Board"
+  --skill test --status OK --message "Hello pulse bOard"
 
 bash ~/.openclaw/skills/pulse-board/digest-agent.sh
 ```

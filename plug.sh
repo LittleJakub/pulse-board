@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# Pulse Board — plug.sh
+# pulse bOard — plug.sh
 # Discovers cron jobs from system crontab and OpenClaw registry,
-# presents a menu, and wires selected jobs into Pulse Board.
+# presents a menu, and wires selected jobs into pulse bOard.
 # No sudo. No root.
 #
 # Crontab writes: uses python3 subprocess to avoid shell escaping issues.
@@ -50,7 +50,7 @@ wrap_cmd() {
 
 # ── Guard ─────────────────────────────────────────────────────────────────────
 if [[ ! -f "$CONFIG_FILE" ]]; then
-  red "  Pulse Board is not installed. Run install.sh first."
+  red "  pulse bOard is not installed. Run install.sh first."
   exit 1
 fi
 
@@ -137,7 +137,7 @@ fi
 # ── Discovery ─────────────────────────────────────────────────────────────────
 clear
 echo ""
-blue "  📋 Pulse Board — plug.sh"
+blue "  📋 pulse bOard — plug.sh"
 echo ""
 blue "  Discovering cron jobs..."
 echo ""

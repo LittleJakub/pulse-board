@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Pulse Board — deliver.sh
+# pulse bOard — deliver.sh
 # Sends a composed digest to the configured channel.
 # Called by digest-agent.sh — not meant for direct use.
 # Writes delivered message to last-delivered.md. Never touches last-digest.md.

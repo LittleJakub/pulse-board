@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Pulse Board — log-append.sh
+# pulse bOard — log-append.sh
 # Called by skill cron wrappers to record a one-line outcome.
 # This is the only way skills should write to pending.log.
 # No sudo. No root.

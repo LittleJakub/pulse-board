@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Pulse Board — unplug.sh
-# Remove a skill from Pulse Board and clean up its cron entry.
+# pulse bOard — unplug.sh
+# Remove a skill from pulse bOard and clean up its cron entry.
 # No sudo. No root.
 
 set -euo pipefail

@@ -1,10 +1,10 @@
-# 📋 Pulse Board
+# 📋 pulse bOard
 
 **Your agent stack's operational heartbeat. Every cron job. One digest.**
 
 You've got a bunch of skills running on a schedule — backing things up, watching VPNs, consolidating memory, doing whatever weird automation you've cooked up. And you have absolutely no idea if any of them actually ran today. Did the backup finish? Did the observer fire? Who knows! It's fine. Probably fine.
 
-Pulse Board fixes that. Every scheduled skill logs a one-liner when it runs. Twice a day, an LLM reads those lines and writes you a friendly human summary. You get a message that tells you what happened, what didn't, and what exploded — without having to SSH in and grep through logs like an animal.
+pulse bOard fixes that. Every scheduled skill logs a one-liner when it runs. Twice a day, an LLM reads those lines and writes you a friendly human summary. You get a message that tells you what happened, what didn't, and what exploded — without having to SSH in and grep through logs like an animal.
 
 ---
 
@@ -30,16 +30,16 @@ That's it. No daemon. No database. No magic. Just cron, bash, and a sprinkle of 
 ## What you get
 
 ```
-📋 Pulse Board Digest — 2026-03-15 05:00 CST
-✅ 12 ok · 0 skipped · 0 warnings · 0 errors
+📋 pulse bOard Digest — 2026-03-15 05:00 CST
+✅ 14 ok · 0 skipped · 0 warnings · 0 errors
 
-All systems ran cleanly overnight. Total Recall observed 4 sessions,
-the reflector consolidated once, and healthy-backup completed at 05:00
-without complaint. Dream cycle ran at 03:00 and processed 7 observations.
+All systems ran cleanly overnight. Chrono-Somnia observed 4 sessions,
+the dream cycle consolidated once, and healthy-backup completed at 05:00
+without complaint. Brief ran at 07:00 and produced a clean morning summary.
 
-• total-recall — ran 12x, all OK
-• total-recall-reflector — ran 4x, all OK
-• total-recall-dream — ran 1x, OK
+• chrono-somnia-observe — ran 12x, all OK
+• chrono-somnia-dream — ran 1x, OK
+• chrono-somnia-brief — ran 1x, OK
 • healthy-backup — ran 1x, OK
 • daily-brief — ran 1x, OK
 ```
@@ -135,7 +135,7 @@ delivery:
 
 ## Plug in a skill
 
-Once Pulse Board is installed, wire up your skills one by one:
+Once pulse bOard is installed, wire up your skills one by one:
 
 ```bash
 bash ~/.openclaw/skills/pulse-board/plug.sh \
@@ -144,16 +144,35 @@ bash ~/.openclaw/skills/pulse-board/plug.sh \
   --cmd "bash ~/.openclaw/skills/total-recall/scripts/observer-agent.sh"
 ```
 
-That's all. Pulse Board wraps the command, wires the cron entry, and starts collecting outcomes automatically.
+That's all. pulse bOard wraps the command, wires the cron entry, and starts collecting outcomes automatically.
 
 Run `plug.sh` with no arguments for an interactive discovery mode.
 
-> ⚠️ **Total Recall dream cycle note:** `dream-cycle.sh` is a file operations helper called *by* the agent — not a standalone runner. Wire the dream cycle as a full agent turn instead:
+> **Chrono-Somnia wiring:** wire each pipeline stage as its own cron entry so pulse bOard tracks them individually:
 > ```bash
+> # Observer — runs every 15 min
 > bash ~/.openclaw/skills/pulse-board/plug.sh \
->   --skill total-recall-dream \
->   --cron "0 3 * * *" \
->   --cmd "openclaw agent --agent main --timeout 1800 --message \"Run the Total Recall Dream Cycle. Follow the instructions in ~/.openclaw/workspace/skills/total-recall/prompts/dream-cycle-prompt.md exactly. Use READ_ONLY_MODE=false and DREAM_PHASE=1.\" --json"
+>   --skill chrono-somnia-observe \
+>   --cron "*/15 * * * *" \
+>   --cmd "python3 ~/.openclaw/skills/chrono-somnia/chrono_somnia.py observe"
+>
+> # Dream cycle — nightly at 23:00
+> bash ~/.openclaw/skills/pulse-board/plug.sh \
+>   --skill chrono-somnia-dream \
+>   --cron "0 23 * * *" \
+>   --cmd "python3 ~/.openclaw/skills/chrono-somnia/chrono_somnia.py dream"
+>
+> # Decay — weekly Sunday at 02:00
+> bash ~/.openclaw/skills/pulse-board/plug.sh \
+>   --skill chrono-somnia-decay \
+>   --cron "0 2 * * 0" \
+>   --cmd "python3 ~/.openclaw/skills/chrono-somnia/chrono_somnia.py decay"
+>
+> # Morning brief — daily at 07:00
+> bash ~/.openclaw/skills/pulse-board/plug.sh \
+>   --skill chrono-somnia-brief \
+>   --cron "0 7 * * *" \
+>   --cmd "python3 ~/.openclaw/skills/chrono-somnia/chrono_somnia.py brief"
 > ```
 
 ---
@@ -172,7 +191,7 @@ Removes the cron entry and registry file. Clean.
 
 ```bash
 bash ~/.openclaw/skills/pulse-board/log-append.sh \
-  --skill test --status OK --message "Hello Pulse Board"
+  --skill test --status OK --message "Hello pulse bOard"
 
 bash ~/.openclaw/skills/pulse-board/digest-agent.sh
 ```
@@ -202,7 +221,7 @@ If that's a concern:
 - Point the digest agent at a local-only model (e.g. Ollama) in `pulse.yaml` → `digest.llm_agent`
 - Or just disable LLM composition — the mechanical fallback is perfectly readable
 
-Also worth knowing: Pulse Board cannot prevent plugged cron jobs from writing secrets into their stdout/stderr. Make sure your jobs don't echo credentials into their outputs.
+Also worth knowing: pulse bOard cannot prevent plugged cron jobs from writing secrets into their stdout/stderr. Make sure your jobs don't echo credentials into their outputs.
 
 ---
 
@@ -248,7 +267,13 @@ bash ~/.openclaw/skills/pulse-board/install.sh
 
 ## Part of the hiVe stack
 
-Pulse Board was built as part of [hiVe](https://github.com/LittleJakub) — a personal multi-agent system running on OpenClaw. It's designed to be lightweight, composable, and easy to drop into any OpenClaw setup without getting in the way of everything else.
+pulse bOard was built as part of [hiVe](https://github.com/LittleJakub) — a personal multi-agent system running on OpenClaw. It's designed to be lightweight, composable, and easy to drop into any OpenClaw setup without getting in the way of everything else.
+
+Other hiVe skills that wire naturally into pulse bOard:
+
+- [chrono-somnia](https://github.com/LittleJakub/chrono-somnia) — long-term memory. Observes sessions, runs nightly dream cycles, promotes patterns to rules
+- **life-ledger** — personal data tracking
+- **task-bridge** — task/project sync
 
 If you're running your own agent stack and want operational visibility without babysitting your crontab, this is for you.
 

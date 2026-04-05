@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Pulse Board — digest-agent.sh
+# pulse bOard — digest-agent.sh
 # Composes and delivers a twice-daily digest from pending.log.
 # LLM summary via openclaw agent; mechanical fallback if unavailable.
 # Raw log → last-digest.md. Delivered message → last-delivered.md (via deliver.sh).
@@ -42,7 +42,8 @@ LOCK="$PULSE_HOME/locks/digest.lock"
 mkdir -p "$(dirname "$LOCK")"
 
 if [[ -f "$LOCK" ]]; then
-  AGE=$(( $(date +%s) - $(date -r "$LOCK" +%s 2>/dev/null || echo 0) ))
+  LOCK_MTIME="$(python3 -c "import os,time; print(int(time.time() - os.path.getmtime('$LOCK')))" 2>/dev/null || echo 7200)"
+  AGE="$LOCK_MTIME"
   [[ $AGE -lt 3600 ]] && { y "digest-agent: already running (${AGE}s). Exiting."; exit 0; }
   y "digest-agent: removing stale lock (${AGE}s)."; rm -f "$LOCK"
 fi
@@ -66,7 +67,7 @@ WARN=$(count '\[WARN' "$PENDING_LOG")
 # ── Save raw log ──────────────────────────────────────────────────────────────
 LAST_DIGEST="$PULSE_HOME/logs/last-digest.md"
 mkdir -p "$(dirname "$LAST_DIGEST")"
-{ printf "# Pulse Board Raw Log — %s\n\n" "$NOW"; cat "$PENDING_LOG"; } > "$LAST_DIGEST"
+{ printf "# pulse bOard Raw Log — %s\n\n" "$NOW"; cat "$PENDING_LOG"; } > "$LAST_DIGEST"
 
 # ── Compose ───────────────────────────────────────────────────────────────────
 TEMP="$(mktemp /tmp/pulse-XXXXXX)"; trap 'rm -f "$LOCK" "$TEMP"' EXIT
@@ -101,7 +102,7 @@ PROMPT_EOF
       2>/dev/null)" && PARSE_OK=true || PARSE_OK=false
 
     if $PARSE_OK && [[ -n "$LLM_TEXT" ]]; then
-      printf "📋 *Pulse Board Digest* — %s\n%s\n\n%s" "$NOW" "$STATUS_LINE" "$LLM_TEXT" > "$TEMP"
+      printf "📋 *pulse bOard Digest* — %s\n%s\n\n%s" "$NOW" "$STATUS_LINE" "$LLM_TEXT" > "$TEMP"
       LLM_SUCCESS=true
       g "digest-agent: LLM summary composed."
     else
@@ -124,7 +125,7 @@ if ! $LLM_SUCCESS; then
     echo "$line" | grep -q '\[SKIP'  && BODY="${BODY}⏭️  ${line}\n" && continue
     BODY="${BODY}✓  ${line}\n"
   done < "$PENDING_LOG"
-  printf "📋 *Pulse Board Digest* — %s\n%s\n\n%b" "$NOW" "$STATUS_LINE" "$BODY" > "$TEMP"
+  printf "📋 *pulse bOard Digest* — %s\n%s\n\n%b" "$NOW" "$STATUS_LINE" "$BODY" > "$TEMP"
   y "digest-agent: using mechanical digest."
 fi
 

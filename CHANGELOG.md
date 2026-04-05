@@ -81,7 +81,7 @@
   crontab write — nothing silent.
 
 ### Notes
-- If you already have Pulse Board installed and hit this issue, add this line
+- If you already have pulse bOard installed and hit this issue, add this line
   to the top of your crontab manually (`crontab -e`):
   `PATH=/home/<you>/.npm-global/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin`
 
@@ -94,7 +94,7 @@
   same behaviour, less code. Single-letter internal helpers, config reads
   collapsed to one line each, mechanical fallback simplified.
 - `deliver.sh` Telegram payload now has `parse_mode: Markdown` baked in —
-  header `*Pulse Board Digest*` renders bold; LLM body stays plain text.
+  header `*pulse bOard Digest*` renders bold; LLM body stays plain text.
 - LLM prompt tightened: explicit instruction against asterisks, backticks,
   underscores, and all Markdown.
 
@@ -129,7 +129,7 @@
   uses a remote/cloud LLM provider, log content will be transmitted off-host.
   Users are advised to use a local-only agent (Ollama) if log privacy is required.
 - `_meta.json` now includes a `privacy` section declaring both the LLM
-  transmission risk and the caveat that Pulse Board cannot prevent plugged jobs
+  transmission risk and the caveat that pulse bOard cannot prevent plugged jobs
   from writing secrets into their outputs.
 - `digest-agent.sh` inline comment notes the privacy implication before the
   agent call.

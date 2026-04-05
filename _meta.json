@@ -1,6 +1,6 @@
 {
   "slug": "pulse-board",
-  "name": "Pulse Board",
+  "name": "pulse bOard",
   "version": "1.1.9",
   "description": "Operational heartbeat for your agent stack. Every cron job, one digest.",
   "tagline": "Every cron job. One digest.",
@@ -76,6 +76,6 @@
   "updated_at": "2026-03-09",
   "privacy": {
     "llm_composition": "When LLM digest is enabled, the raw pending.log is included in the prompt sent to the configured OpenClaw agent. If that agent uses a remote/cloud LLM provider, log content will be transmitted off-host. Review your agent configuration (openclaw agents list) before enabling. Use a local-only agent (e.g. Ollama) if log privacy is required.",
-    "secrets_in_logs": "Pulse Board cannot prevent plugged cron jobs from writing secrets into their stdout/stderr. Ensure plugged jobs do not echo credentials into their outputs."
+    "secrets_in_logs": "pulse bOard cannot prevent plugged cron jobs from writing secrets into their stdout/stderr. Ensure plugged jobs do not echo credentials into their outputs."
   }
 }
