@@ -1,5 +1,38 @@
 # Changelog
 
+## [1.2.1] - 2026-04-06
+
+### Fixed
+- `digest-agent.sh` now sources `secrets_env` from `pulse.yaml` after reading
+  config, matching what `plug.sh` already does. Fixes a regression introduced in
+  `914ade0` where switching from `~/.openclaw/shared/secrets/openclaw-secrets.env`
+  to `~/.openclaw/.env` silently dropped any `PATH` entries (e.g. npm-global bin)
+  that lived in the old file, causing `openclaw` to be unfindable in cron and the
+  digest to fall back to mechanical format every run.
+
+---
+
+## [1.2.0] - 2026-04-06
+
+### Added
+- chrono-somnia wiring section in README: ready-to-paste `plug.sh` commands for
+  all four pipeline stages (`observe` / `dream` / `decay` / `brief`) with the
+  recommended cron schedule.
+- hiVe stack section in README now lists chrono-somnia with a direct link.
+
+### Changed
+- Renamed skill from **Pulse Board** to **pulse bOard** across all files.
+- Example digest output in README updated to reflect chrono-somnia skill names.
+
+### Fixed
+- `digest-agent.sh` lock staleness check used `date -r <file>` which is
+  macOS/BSD only. On Linux the fallback made `AGE` equal to the current unix
+  timestamp (~1.7B s), always exceeding the 3600 s threshold — so concurrent
+  runs would always nuke the lock. Replaced with `python3 os.path.getmtime`,
+  which is cross-platform and already a hard dependency.
+
+---
+
 ## [1.1.9] - 2026-03-15
 
 ### Added

@@ -37,6 +37,11 @@ RETENTION="$(cfg 'retention_hours')";           RETENTION="${RETENTION:-24}"
 LLM_AGENT="$(cfg_under 'digest' 'llm_agent')"; LLM_AGENT="${LLM_AGENT:-main}"
 LLM_TIMEOUT="$(cfg_under 'digest' 'llm_timeout')"; LLM_TIMEOUT="${LLM_TIMEOUT:-60}"
 
+# Source secrets_env from pulse.yaml (same file plug.sh uses — may contain PATH entries)
+SECRETS_ENV="$(expand "$(cfg 'secrets_env')")"; SECRETS_ENV="${SECRETS_ENV:-}"
+[[ -n "$SECRETS_ENV" && -f "$SECRETS_ENV" ]] && \
+  { set +u; set -a; source "$SECRETS_ENV"; set +a; set -u; }
+
 # ── Lock ──────────────────────────────────────────────────────────────────────
 LOCK="$PULSE_HOME/locks/digest.lock"
 mkdir -p "$(dirname "$LOCK")"
